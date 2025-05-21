@@ -130,7 +130,7 @@ export function SidebarRight({
   // Get cached user data to show during logout
   const cachedUserData = React.useMemo(() => {
     return getUserData();
-  }, [supabaseUser, clerkUser, getUserData]); 
+  }, [supabaseUser, clerkUser, getUserData]);
 
   return (
     <Sidebar

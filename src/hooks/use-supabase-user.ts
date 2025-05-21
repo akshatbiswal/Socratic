@@ -35,15 +35,39 @@ export function useSupabaseUser() {
         setLoading(true);
         setError(null);
 
-        // Create a Supabase client with the Clerk session token
+        // Log for debugging
+        console.log("Fetching user data for Clerk ID:", user.id);
+        
+        // Get token with the supabase template
+        const clerkToken = await session.getToken({
+          template: 'supabase',
+        });
+
+        if (!clerkToken) {
+          throw new Error('Failed to get Clerk token with Supabase template');
+        }
+
+        // Create a Supabase client with both authentication methods
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_KEY!,
           {
             global: {
-              headers: {
-                Authorization: `Bearer ${await session.getToken()}`,
+              fetch: async (url, options = {}) => {
+                const headers = new Headers(options?.headers);
+                headers.set('Authorization', `Bearer ${clerkToken}`);
+                
+                return fetch(url, {
+                  ...options,
+                  headers,
+                });
               },
+            },
+            auth: {
+              persistSession: false
+            },
+            async accessToken() {
+              return clerkToken;
             },
           }
         );
@@ -56,10 +80,22 @@ export function useSupabaseUser() {
           .single();
 
         if (error) {
+          console.error("Supabase query error:", error);
+          
+          // Try to get more info about the error
+          const authInfo = await supabase.auth.getSession();
+          console.log("Auth info:", authInfo);
+          
           throw error;
         }
 
-        setSupabaseUser(data);
+        if (!data) {
+          console.log("No user data found, might need to create user record");
+          // You might want to create a user record here if integration is configured to not do it automatically
+        } else {
+          console.log("User data fetched successfully");
+          setSupabaseUser(data);
+        }
       } catch (err: any) {
         console.error('Error fetching Supabase user data:', err);
         setError(err.message || 'Failed to fetch user data');

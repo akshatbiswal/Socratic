@@ -14,7 +14,7 @@ export const createStandardClient = () => {
 };
 
 // Create a Supabase client with Clerk authentication
-export const createClerkSupabaseClient = () => {
+export const useClerkSupabaseClient = () => {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
   const { session } = useSession(); 

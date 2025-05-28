@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 export default function TroubleshootingGuide() {
   return (
     <div className="p-8 bg-white rounded-lg shadow max-w-4xl mx-auto">
@@ -22,7 +22,7 @@ export default function TroubleshootingGuide() {
               <li>Add Clerk as an auth provider in Authentication → Sign-in Methods → Auth providers</li>
               <li>Paste your Clerk domain from the Clerk Dashboard</li>
               <li>Verify Row Level Security (RLS) is enabled on your tables</li>
-              <li>Check that you have proper RLS policies configured that use <code>auth.jwt()->>'sub'</code></li>
+              <li>Check that you have proper RLS policies configured that use <code>auth.jwt()-'sub'</code></li>
             </ul>
           </li>
           <li>
@@ -43,7 +43,7 @@ export default function TroubleshootingGuide() {
           <h3 className="font-bold">1. "Auth Error" or "Not Authenticated" from Supabase</h3>
           <p className="mb-2">This usually means the JWT token is missing or invalid:</p>
           <ul className="list-disc pl-6">
-            <li>Verify you're passing the token with the 'supabase' template: <code>session.getToken({ template: 'supabase' })</code></li>
+            <li>Verify you're passing the token with the 'supabase' template: <code>session.getToken(&#123; template: "supabase" &#125;)</code></li>
             <li>Check that you've activated the Supabase integration in your Clerk Dashboard</li>
             <li>Ensure your Supabase client is correctly configured to use the token</li>
             <li>Check browser console for any errors in token retrieval</li>
@@ -66,7 +66,7 @@ export default function TroubleshootingGuide() {
           <p className="mb-2">Supabase returns data that should be protected:</p>
           <ul className="list-disc pl-6">
             <li>Verify RLS is enabled on your tables</li>
-            <li>Ensure your policies use <code>auth.jwt()->>'sub'</code> to get the Clerk user ID</li>
+            <li>Ensure your policies use <code>auth.jwt()-'sub'</code> to get the Clerk user ID</li>
             <li>Test your policies in the Supabase SQL editor</li>
             <li>Check if the same user_id/clerk_id is being used consistently</li>
           </ul>

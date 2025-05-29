@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { auth } from '@clerk/nextjs/server';
 
 // Create a Supabase client for server-side usage with Clerk integration
-export function createClerkSupabaseServerClient() {
+export async function createClerkSupabaseServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
   
@@ -11,7 +11,7 @@ export function createClerkSupabaseServerClient() {
   }
   
   // Get the auth helper from Clerk
-  const { getToken } = auth();
+  const { getToken } = await auth();
   
   return createClient(supabaseUrl, supabaseKey, {
     global: {

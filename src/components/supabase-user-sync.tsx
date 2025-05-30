@@ -15,16 +15,12 @@ export function SupabaseUserSync() {
 
     const syncUserData = async () => {
       try {
-        // Create a Supabase client with the Clerk session token
+        // NEW APPROACH: Create Supabase client with accessToken callback
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_KEY!,
           {
-            global: {
-              headers: {
-                Authorization: `Bearer ${await session.getToken()}`,
-              },
-            },
+            accessToken: async () => session?.getToken() ?? null,
           }
         );
 

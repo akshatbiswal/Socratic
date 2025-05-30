@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { auth } from '@clerk/nextjs/server';
 
-// Create a Supabase client for server-side usage with Clerk integration
+// Create a Supabase client for server-side usage with Clerk integration using the NEW approach
 export async function createClerkSupabaseServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
@@ -13,26 +13,11 @@ export async function createClerkSupabaseServerClient() {
   // Get the auth helper from Clerk
   const { getToken } = await auth();
   
+  // NEW APPROACH: Use accessToken callback instead of JWT templates
   return createClient(supabaseUrl, supabaseKey, {
-    global: {
-      fetch: async (url, options = {}) => {
-        // Get the custom Supabase token from Clerk
-        const clerkToken = await getToken({
-          template: 'supabase',
-        });
-        
-        // Insert the Clerk Supabase token into the headers
-        const headers = new Headers(options?.headers);
-        if (clerkToken) {
-          headers.set('Authorization', `Bearer ${clerkToken}`);
-        }
-        
-        // Now call the default fetch
-        return fetch(url, {
-          ...options,
-          headers,
-        });
-      },
+    accessToken: async () => {
+      const token = await getToken();
+      return token ?? null;
     },
   });
 } 

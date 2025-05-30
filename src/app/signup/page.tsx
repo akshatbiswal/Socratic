@@ -23,6 +23,16 @@ export default function SignUpPage() {
   const [error, setError] = useState("")
   const router = useRouter()
 
+  // Check URL parameters for messages
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const urlError = params.get('error')
+    
+    if (urlError === 'no_account') {
+      setError("That account is not created on Socratic. Please sign up or login with another email.")
+    }
+  }, [])
+
   // Redirect already signed in users to dashboard
   useEffect(() => {
     if (isUserLoaded && isSignedIn) {
@@ -97,11 +107,19 @@ export default function SignUpPage() {
       
       await signUp.authenticateWithRedirect({
         strategy: provider,
-        redirectUrl: "/sso-callback",
+        redirectUrl: "/sso-callback?action=signup",
         redirectUrlComplete: "/dashboard"
       })
     } catch (err: any) {
       console.error("OAuth error:", err)
+      
+      // Check for specific Clerk error codes
+      if (err.errors?.[0]?.code === "form_identifier_exists") {
+        // Redirect to login page with account exists message
+        router.push("/login?message=account_exists")
+        return
+      }
+      
       setError(err.errors?.[0]?.message || "Something went wrong with authentication.")
       setIsLoading(false)
     }
@@ -178,6 +196,10 @@ export default function SignUpPage() {
                       disabled={isLoading || isSignedIn}
                     />
                   </div>
+                  
+                  {/* CAPTCHA Widget - Required for Clerk bot protection */}
+                  <div id="clerk-captcha"></div>
+                  
                   <Button type="submit" className="w-full" disabled={isLoading || !isLoaded || isSignedIn}>
                     {isLoading ? (
                       <>

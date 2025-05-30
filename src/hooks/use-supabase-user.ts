@@ -38,36 +38,14 @@ export function useSupabaseUser() {
         // Log for debugging
         console.log("Fetching user data for Clerk ID:", user.id);
         
-        // Get token with the supabase template
-        const clerkToken = await session.getToken({
-          template: 'supabase',
-        });
-
-        if (!clerkToken) {
-          throw new Error('Failed to get Clerk token with Supabase template');
-        }
-
-        // Create a Supabase client with both authentication methods
+        // Create Supabase client with accessToken callback
         const supabase = createClient(
           process.env.NEXT_PUBLIC_SUPABASE_URL!,
           process.env.NEXT_PUBLIC_SUPABASE_KEY!,
           {
-            global: {
-              fetch: async (url, options = {}) => {
-                const headers = new Headers(options?.headers);
-                headers.set('Authorization', `Bearer ${clerkToken}`);
-                
-                return fetch(url, {
-                  ...options,
-                  headers,
-                });
-              },
-            },
-            auth: {
-              persistSession: false
-            },
-            async accessToken() {
-              return clerkToken;
+            accessToken: async () => {
+              const token = await session.getToken();
+              return token;
             },
           }
         );
@@ -80,11 +58,12 @@ export function useSupabaseUser() {
           .single();
 
         if (error) {
-          console.error("Supabase query error:", error);
-          
-          // Try to get more info about the error
-          const authInfo = await supabase.auth.getSession();
-          console.log("Auth info:", authInfo);
+          console.error("Supabase query error:", {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          });
           
           throw error;
         }

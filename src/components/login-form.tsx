@@ -124,6 +124,10 @@ export function LoginForm({
                   disabled={isLoading}
                 />
               </div>
+              
+              {/* CAPTCHA Widget - Required for Clerk bot protection */}
+              <div id="clerk-captcha"></div>
+              
               <Button type="submit" className="w-full" disabled={isLoading || !isLoaded}>
                 {isLoading ? "Logging in..." : "Login"}
               </Button>

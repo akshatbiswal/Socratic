@@ -56,7 +56,10 @@ export function SidebarRight({
   
   // Consider user data loading if either Clerk or Supabase data is loading
   // Don't show loading state if we're logging out
-  const isUserLoading = !isLoggingOut && (isSupabaseLoading || !isClerkLoaded)
+  // OPTIMIZATION: Don't show loading if we already have either clerkUser or supabaseUser data
+  // This prevents flickering when session refreshes but we already have cached user data
+  const hasUserData = clerkUser || supabaseUser
+  const isUserLoading = !isLoggingOut && !hasUserData && (isSupabaseLoading || !isClerkLoaded)
 
   // State for selected date
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(undefined)

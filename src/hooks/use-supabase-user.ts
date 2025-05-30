@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser, useSession } from '@clerk/nextjs';
 import { createClient } from '@supabase/supabase-js';
 
@@ -22,6 +22,13 @@ export function useSupabaseUser() {
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Track if we've ever successfully loaded data
+  const hasDataRef = useRef(false);
+  // Track the last successful clerk_id to detect user changes
+  const lastClerkIdRef = useRef<string | null>(null);
+  // Prevent concurrent fetches
+  const fetchingRef = useRef(false);
 
   useEffect(() => {
     // Only run once the user is loaded and we have a session
@@ -30,9 +37,29 @@ export function useSupabaseUser() {
       return;
     }
 
+    // If this is a different user, reset the cache and show loading
+    if (lastClerkIdRef.current !== user.id) {
+      hasDataRef.current = false;
+      lastClerkIdRef.current = user.id;
+      setSupabaseUser(null);
+      setLoading(true);
+    }
+
+    // If we already have data for this user and are just refreshing, don't show loading
+    // This prevents the flickering on tab switch
+    const shouldShowLoading = !hasDataRef.current;
+
+    // Prevent concurrent fetches
+    if (fetchingRef.current) {
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
-        setLoading(true);
+        fetchingRef.current = true;
+        if (shouldShowLoading) {
+          setLoading(true);
+        }
         setError(null);
 
         // Log for debugging
@@ -74,12 +101,14 @@ export function useSupabaseUser() {
         } else {
           console.log("User data fetched successfully");
           setSupabaseUser(data);
+          hasDataRef.current = true;
         }
       } catch (err: any) {
         console.error('Error fetching Supabase user data:', err);
         setError(err.message || 'Failed to fetch user data');
       } finally {
         setLoading(false);
+        fetchingRef.current = false;
       }
     };
 

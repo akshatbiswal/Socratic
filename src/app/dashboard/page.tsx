@@ -4,6 +4,7 @@ import { SupabaseUserSync } from "@/components/supabase-user-sync";
 import { AuthProvider } from "@/hooks/use-auth"
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
+import { TaskDashboard } from "@/components/tasks/task-dashboard"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -42,9 +43,8 @@ export default function Page() {
               </Breadcrumb>
             </div>
           </header>
-          <div className="flex flex-1 flex-col gap-4 p-4 overflow-y-auto hide-scrollbar">
-            <div className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl" />
-            <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl" />
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <TaskDashboard />
           </div>
         </SidebarInset>
         <SidebarRight />

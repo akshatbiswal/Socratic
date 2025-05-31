@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { TaskViewHeader } from "./task-view-header"
 import { TaskListContainer } from "./task-list-container"
@@ -19,6 +19,7 @@ export interface Task {
   updatedAt: Date
   tags?: string[]
   projectId?: string
+  subProjectId?: string
 }
 
 export interface TaskFilter {
@@ -26,6 +27,7 @@ export interface TaskFilter {
   priority?: Task['priority'][]
   tags?: string[]
   projectId?: string
+  subProjectId?: string
   dueDate?: {
     start?: Date
     end?: Date
@@ -37,7 +39,12 @@ export interface TaskSort {
   direction: 'asc' | 'desc'
 }
 
-export function TaskDashboard() {
+interface TaskDashboardProps {
+  initialFilter?: TaskFilter
+  onFilterChange?: (filter: TaskFilter) => void
+}
+
+export function TaskDashboard({ initialFilter = {}, onFilterChange }: TaskDashboardProps) {
   const [tasks, setTasks] = useState<Task[]>([
     // Sample tasks to demonstrate functionality
     {
@@ -52,6 +59,7 @@ export function TaskDashboard() {
       updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
       tags: ['urgent', 'meeting', 'review'],
       projectId: '2', // Work
+      subProjectId: 'projects', // Projects sub-project
     },
     {
       id: '2',
@@ -65,6 +73,7 @@ export function TaskDashboard() {
       updatedAt: new Date(Date.now() - 60 * 60 * 1000),
       tags: ['development', 'ui', 'urgent'],
       projectId: '2', // Work
+      subProjectId: 'projects', // Projects sub-project
     },
     {
       id: '3',
@@ -78,6 +87,7 @@ export function TaskDashboard() {
       updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
       tags: ['personal', 'planning'],
       projectId: '1', // Personal
+      subProjectId: 'daily-tasks', // Daily Tasks sub-project
     },
     {
       id: '4',
@@ -90,7 +100,8 @@ export function TaskDashboard() {
       createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
       tags: ['learning', 'react'],
-      projectId: '3', // Learning
+      projectId: '1', // Personal
+      subProjectId: 'learning-goals', // Learning Goals sub-project
     },
     {
       id: '5',
@@ -104,6 +115,7 @@ export function TaskDashboard() {
       updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
       tags: ['health'],
       projectId: '1', // Personal
+      subProjectId: 'health-wellness', // Health & Wellness sub-project
     },
     {
       id: '6',
@@ -117,10 +129,84 @@ export function TaskDashboard() {
       updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       tags: ['documentation'],
       projectId: '2', // Work
+      subProjectId: 'documentation', // Documentation sub-project
+    },
+    {
+      id: '7',
+      title: 'Team standup meeting',
+      description: 'Daily sync with development team',
+      completed: false,
+      priority: 'medium',
+      status: 'pending',
+      dueDate: new Date(), // Today
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      tags: ['meeting', 'team'],
+      projectId: '2', // Work
+      subProjectId: 'meetings', // Meetings sub-project
+    },
+    {
+      id: '8',
+      title: 'Design new app icon',
+      description: 'Create modern icon for the mobile app',
+      completed: false,
+      priority: 'low',
+      status: 'pending',
+      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // This week
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      tags: ['design', 'creative'],
+      projectId: '3', // Creative
+      subProjectId: 'design-ideas', // Design Ideas sub-project
+    },
+    {
+      id: '9',
+      title: 'Write blog post about productivity',
+      description: 'Share insights on task management strategies',
+      completed: false,
+      priority: 'medium',
+      status: 'in-progress',
+      dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // This week
+      createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 12 * 60 * 60 * 1000),
+      tags: ['writing', 'productivity'],
+      projectId: '3', // Creative
+      subProjectId: 'writing', // Writing sub-project
+    },
+    {
+      id: '10',
+      title: 'Practice guitar scales',
+      description: 'Daily 30-minute practice session',
+      completed: true,
+      priority: 'low',
+      status: 'completed',
+      dueDate: new Date(), // Today
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      tags: ['music', 'practice'],
+      projectId: '3', // Creative
+      subProjectId: 'music', // Music sub-project
     },
   ])
-  const [filter, setFilter] = useState<TaskFilter>({})
+  const [filter, setFilter] = useState<TaskFilter>(initialFilter)
   const [sort, setSort] = useState<TaskSort>({ field: 'dueDate', direction: 'asc' })
+
+  // Update filter when initialFilter prop changes
+  useEffect(() => {
+    // Only update if there are meaningful changes from external sources (sidebar)
+    if (JSON.stringify(initialFilter) !== JSON.stringify(filter)) {
+      setFilter(initialFilter)
+    }
+  }, [initialFilter])
+
+  // Handle filter changes from the UI
+  const handleFilterChange = (newFilter: TaskFilter) => {
+    setFilter(newFilter)
+    // Propagate filter changes back to parent component
+    if (onFilterChange) {
+      onFilterChange(newFilter)
+    }
+  }
 
   const handleCreateTask = (taskData: Partial<Task>) => {
     const newTask: Task = {
@@ -135,6 +221,7 @@ export function TaskDashboard() {
       updatedAt: new Date(),
       tags: taskData.tags || [],
       projectId: taskData.projectId,
+      subProjectId: taskData.subProjectId,
     }
     setTasks(prev => [...prev, newTask])
   }
@@ -171,7 +258,7 @@ export function TaskDashboard() {
         <TaskViewHeader 
           filter={filter}
           sort={sort}
-          onFilterChange={setFilter}
+          onFilterChange={handleFilterChange}
           onSortChange={setSort}
           taskCount={tasks.length}
         />

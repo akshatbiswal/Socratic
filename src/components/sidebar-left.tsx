@@ -143,9 +143,39 @@ const data = {
   ],
 }
 
-export function SidebarLeft() {
+interface SidebarLeftProps {
+  onFilterChange?: (filter: { projectId?: string; subProjectId?: string }) => void
+}
+
+export function SidebarLeft({ onFilterChange }: SidebarLeftProps) {
   const { isLoggedIn } = useAuth()
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<string[]>(["Personal"])
+
+  // Mapping between workspace names and project IDs
+  const workspaceToProjectMap: Record<string, string> = {
+    "Personal": "1",
+    "Work": "2",
+    "Creative": "3",
+  }
+
+  // Mapping between workspace page names and sub-project IDs
+  const pageToSubProjectMap: Record<string, Record<string, string>> = {
+    "Personal": {
+      "Daily Tasks": "daily-tasks",
+      "Health & Wellness": "health-wellness",
+      "Learning Goals": "learning-goals",
+    },
+    "Work": {
+      "Projects": "projects",
+      "Meetings": "meetings",
+      "Documentation": "documentation",
+    },
+    "Creative": {
+      "Design Ideas": "design-ideas",
+      "Writing": "writing",
+      "Music": "music",
+    },
+  }
 
   const toggleWorkspace = (workspaceName: string) => {
     setExpandedWorkspaces(prev => 
@@ -153,6 +183,15 @@ export function SidebarLeft() {
         ? prev.filter(name => name !== workspaceName)
         : [...prev, workspaceName]
     )
+  }
+
+  const handleSubProjectClick = (workspaceName: string, pageName: string) => {
+    const projectId = workspaceToProjectMap[workspaceName]
+    const subProjectId = pageToSubProjectMap[workspaceName]?.[pageName]
+    
+    if (projectId && subProjectId && onFilterChange) {
+      onFilterChange({ projectId, subProjectId })
+    }
   }
 
   if (!isLoggedIn) {
@@ -273,7 +312,10 @@ export function SidebarLeft() {
                     {workspace.pages.map((page) => (
                       <div key={page.name}>
                         <SidebarMenuButton asChild className="w-full">
-                          <a href={page.url} className="group flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent text-sm">
+                          <a href={page.url} className="group flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-sidebar-accent text-sm" onClick={(e) => {
+                            e.preventDefault()
+                            handleSubProjectClick(workspace.name, page.name)
+                          }}>
                             <span className="text-sm">{page.emoji}</span>
                             <span className="text-sm">{page.name}</span>
                           </a>

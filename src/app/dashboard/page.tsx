@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { SupabaseUserSync } from "@/components/supabase-user-sync";
 import { AuthProvider } from "@/hooks/use-auth"
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
 import { TaskDashboard } from "@/components/tasks/task-dashboard"
+import { TaskFilter } from "@/components/tasks/task-dashboard"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,11 +21,21 @@ import {
 } from "@/components/ui/sidebar"
 
 export default function Page() {
+  const [globalFilter, setGlobalFilter] = useState<TaskFilter>({})
+
+  const handleWorkspaceFilterChange = (filter: { projectId?: string; subProjectId?: string }) => {
+    setGlobalFilter(filter)
+  }
+
+  const handleTaskFilterChange = (filter: TaskFilter) => {
+    setGlobalFilter(filter)
+  }
+
   return (
     <AuthProvider>
       <SupabaseUserSync />
       <SidebarProvider>
-        <SidebarLeft />
+        <SidebarLeft onFilterChange={handleWorkspaceFilterChange} />
         <SidebarInset className="lg:pr-64 hide-scrollbar">
           <header className="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2">
             <div className="flex flex-1 items-center gap-2 px-3">
@@ -44,7 +56,10 @@ export default function Page() {
             </div>
           </header>
           <div className="flex flex-1 flex-col overflow-hidden">
-            <TaskDashboard />
+            <TaskDashboard 
+              initialFilter={globalFilter} 
+              onFilterChange={handleTaskFilterChange}
+            />
           </div>
         </SidebarInset>
         <SidebarRight />

@@ -48,6 +48,11 @@ export function TaskListContainer({
       filtered = filtered.filter(task => task.projectId === filter.projectId)
     }
 
+    // Apply sub-project filter
+    if (filter.subProjectId) {
+      filtered = filtered.filter(task => task.subProjectId === filter.subProjectId)
+    }
+
     // Apply date range filter
     if (filter.dueDate?.start || filter.dueDate?.end) {
       filtered = filtered.filter(task => {
@@ -96,6 +101,7 @@ export function TaskListContainer({
       (filter.priority && filter.priority.length > 0) ||
       (filter.tags && filter.tags.length > 0) ||
       filter.projectId ||
+      filter.subProjectId ||
       filter.dueDate?.start ||
       filter.dueDate?.end
     )

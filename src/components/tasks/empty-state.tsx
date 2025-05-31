@@ -104,6 +104,9 @@ export function EmptyState({ hasFilters = false, filter, onAddTask }: EmptyState
     if (filter?.projectId) {
       activeFilters.push(`Project filter active`)
     }
+    if (filter?.subProjectId) {
+      activeFilters.push(`Sub-project filter active`)
+    }
     if (filter?.dueDate?.start || filter?.dueDate?.end) {
       activeFilters.push(`Date range filter active`)
     }
